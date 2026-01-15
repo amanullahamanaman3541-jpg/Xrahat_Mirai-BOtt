@@ -2,7 +2,7 @@ module.exports.config = {
   name: "hot",
   version: "1.0.0",
   hasPermssion: 2,
-  credits: "🔰Rahat 🔰",
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "hot video",
   commandCategory: "admin",
   usages: "horny + hot + sex vedio",
@@ -143,12 +143,12 @@ module.exports.run = async function({ api, event }) {
     .pipe(fs.createWriteStream(path))
     .on("close", () => {
       api.sendMessage({
-        body: "🔰পাপির দল 😤 হাত মারবি না কিন্তু🥵🫵",
+        body: "🔰পাপির দল😤\nহাত মারবি না কিন্তু🥵🫵",
         attachment: fs.createReadStream(path)
       }, event.threadID, () => fs.unlinkSync(path));
     })
     .on("error", (err) => {
       console.error("Error downloading video:", err);
-      api.sendMessage("Bokasoda video Dawonlod korte pari nai🤧\nPlease aktu por hat mara🥵.", event.threadID);
+      api.sendMessage("Bokasoda video Dawonlod korte pari nai🤧\nPlease aktu por hat maro🥵.", event.threadID);
     });
 };
