@@ -6,7 +6,7 @@ module.exports.config = {
   name: "wallpaper",
   version: "1.0.0",
   hasPermission: 0,
-  credits: "Islamick Cyber Chat ",
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "ফোন ওয়ালপেপার",
   usages: "wallpaper [নাম]",
   commandCategory: "user",
