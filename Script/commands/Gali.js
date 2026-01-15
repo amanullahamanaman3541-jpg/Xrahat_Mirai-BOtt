@@ -3,7 +3,7 @@ module.exports.config = {
 	name: "gali",
     version: "1.0.1",
 	hasPermssion: 0,
-	credits: "𝐂𝐘𝐁𝐄𝐑 ☢️_𖣘 -𝐁𝐎𝐓 ⚠️ 𝑻𝑬𝑨𝑴_ ☢️", 
+	credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰", 
 	description: "no prefix",
 	commandCategory: "no prefix",
 	usages: "abal",
