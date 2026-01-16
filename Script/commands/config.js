@@ -1,12 +1,72 @@
 module.exports.config = {
 	name: "config",
-	version: "1.0.0",
+	version: "1.1.0",
 	hasPermssion: 2,
-	credits: "rX",
-	description: "config bot!",
+	credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
+	description: "config bot with multiple mention detection",
 	commandCategory: "admin",
+	usages: "[commands] [@mention/reply/UID/link/name]",
 	cooldowns: 5
 };
+
+// ===== Helper: Full Name Mention Detection =====
+async function getUIDByFullName(api, threadID, body) {
+    if (!body.includes("@")) return null;
+    const match = body.match(/@(.+)/);
+    if (!match) return null;
+    const targetName = match[1].trim().toLowerCase().replace(/\s+/g, " ");
+    const threadInfo = await api.getThreadInfo(threadID);
+    const users = threadInfo.userInfo || [];
+    const user = users.find(u => {
+        if (!u.name) return false;
+        const fullName = u.name.trim().toLowerCase().replace(/\s+/g, " ");
+        return fullName === targetName;
+    });
+    return user ? user.id : null;
+}
+
+// Helper: Get UID from Facebook link
+async function getUIDFromLink(link, api) {
+    if (link.includes("facebook.com") || link.includes("fb.com")) {
+        try {
+            return await api.getUID(link);
+        } catch {
+            return null;
+        }
+    }
+    return null;
+}
+
+// Function to detect target IDs in three ways from string
+async function detectTargetIDsFromString(api, event, inputString) {
+    const { threadID } = event;
+    const parts = inputString.split(/\s+/);
+    const targetIDs = [];
+    
+    for (const part of parts) {
+        let targetID = null;
+        
+        // Check if it's a Facebook link
+        if (part.includes(".com/")) {
+            targetID = await getUIDFromLink(part, api);
+        }
+        // Check if it's a mention (starting with @)
+        else if (part.startsWith("@")) {
+            // Try to get by full name
+            targetID = await getUIDByFullName(api, threadID, part);
+        }
+        // Check if it's a numeric UID
+        else if (!isNaN(part)) {
+            targetID = part;
+        }
+        
+        if (targetID) {
+            targetIDs.push(targetID);
+        }
+    }
+    
+    return targetIDs;
+}
 
 module.exports.languages = {
   "vi": {},
@@ -91,7 +151,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
             client_mutation_id: Math.round(Math.random()*19)
           }
     		}),
-    		doc_id: "61582708907708"
+    		doc_id: "100017985245260"
       };
       api.httpPost("https://www.facebook.com/api/graphql/", form, (err, data) => {
         if (err || JSON.parse(data).errors) reply("An error occurred, please try again later");
@@ -99,7 +159,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       });
     }
     else if (["08", "8"].includes(args[0])) {
-      return reply(`Reply to this message with the id of the person you want to block, you can enter multiple ids separated by a space or a newline`, (e, info) => {
+      return reply(`Reply to this message with the id of the person you want to block, you can enter multiple ids separated by a space or a newline\n\n📋 Supported formats:\n• UID (e.g., 1000123456789)\n• Facebook link (e.g., https://facebook.com/username)\n• @Full Name (e.g., @John Doe)\n• @mention (in group chat)`, (e, info) => {
         global.client.handleReply.push({
           name: this.config.name,
           messageID: info.messageID,
@@ -109,7 +169,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       });
     }
     else if (["09", "9"].includes(args[0])) {
-      return reply(`Reply to this message with the id of the person you want to unblock, can enter multiple ids separated by space or newline`, (e, info) => {
+      return reply(`Reply to this message with the id of the person you want to unblock, can enter multiple ids separated by space or newline\n\n📋 Supported formats:\n• UID (e.g., 1000123456789)\n• Facebook link (e.g., https://facebook.com/username)\n• @Full Name (e.g., @John Doe)\n• @mention (in group chat)`, (e, info) => {
         global.client.handleReply.push({
           name: this.config.name,
           messageID: info.messageID,
@@ -150,7 +210,16 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       });
     }
     else if (["14", "15", "16", "17", "18", "19"].includes(args[0])) {
-      reply(`Reply to this message with the desired post id ${args[0]  == "13" ? "release emotions" : args[0] == "14" ? "send friend invitations" : args[0] == "15" ? "accept friend request" : args[0] == "16" ? "decline friend request" : args[0] == "17" ? "delete friends" : "send Message"}, can enter multiple ids separated by space or newline`, (e, info) => {
+      let actionName = "";
+      switch(args[0]) {
+        case "14": actionName = "release emotions"; break;
+        case "15": actionName = "send friend invitations"; break;
+        case "16": actionName = "accept friend request"; break;
+        case "17": actionName = "decline friend request"; break;
+        case "18": actionName = "delete friends"; break;
+        case "19": actionName = "send Message"; break;
+      }
+      reply(`Reply to this message with the desired user id for ${actionName}\n\n📋 Supported formats:\n• UID (e.g., 1000123456789)\n• Facebook link (e.g., https://facebook.com/username)\n• @Full Name (e.g., @John Doe)\n• @mention (in group chat)\n• Can enter multiple ids separated by space or newline`, (e, info) => {
         global.client.handleReply.push({
           name: this.config.name,
           messageID: info.messageID,
@@ -178,7 +247,6 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     }
   }
   
-  
   else if (type == 'changeBio') {
     const bio = body.toLowerCase() == 'delete' ? '' : body;
     api.changeBio(bio, false, (err) => {
@@ -186,7 +254,6 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       else return reply(`Is already ${!bio ? "delete bot's profile successfully" : `change bot profile to: ${bio}`}`);
     });
   }
-  
   
   else if (type == 'changeNickname') {
     const nickname = body.toLowerCase() == 'delete' ? '' : body;
@@ -223,7 +290,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
         av: botID,
       	fb_api_req_friendly_name: "ProfileCometNicknameSaveMutation",
       	fb_api_caller_class: "RelayModern",
-      	doc_id: "61582708907708",
+      	doc_id: "100017985245260",
       	variables: JSON.stringify(variables)
       };
     }
@@ -234,7 +301,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
         av: botID,
       	fb_api_req_friendly_name: "ProfileCometAboutFieldItemDeleteMutation",
       	fb_api_caller_class: "RelayModern",
-      	doc_id: "61582708907708",
+      	doc_id: "100037743553265",
       	variables: JSON.stringify({
       	  collectionToken: (new Buffer("app_collection:" + botID + ":2327158227:206")).toString('base64'),
       	  input: {
@@ -257,7 +324,6 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       else reply(`Is already ${!nickname ? "Delete the bot's nickname successfully" : `rename bot's nickname to: ${nickname}`}`);
     });
   }
-  
   
   else if (type == 'changeAvatar') {
     let imgUrl;
@@ -286,7 +352,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
         av: botID,
   			fb_api_req_friendly_name: "ProfileCometProfilePictureSetMutation",
   			fb_api_caller_class: "RelayModern",
-  			doc_id: "61582708907708",
+  			doc_id: "100037743553265",
   			variables: JSON.stringify({
           input: {
             caption: "",
@@ -321,7 +387,6 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     }
   }
   
-  
   else if (type == 'blockUser') {
     if (!body) return reply("Please enter the uid of the people you want to block on messenger, you can enter multiple ids separated by space or newline", (e, info) => {
       global.client.handleReply.push({
@@ -331,10 +396,17 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
         type: 'blockUser'
       });
     });
-    const uids = body.replace(/\s+/g, " ").split(" ");
+    
+    // Detect target IDs from input (supports UID, link, name)
+    const targetIDs = await detectTargetIDsFromString(api, event, body);
+    
+    if (targetIDs.length === 0) {
+      return reply("❌ Could not detect any valid user IDs. Please enter UID, Facebook link, or @fullname.", threadID, messageID);
+    }
+    
     const success = [];
     const failed = [];
-    for (const uid of uids) {
+    for (const uid of targetIDs) {
       try {
         await api.changeBlockedStatus(uid, true);
         success.push(uid);
@@ -346,7 +418,6 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     reply(`» Successfully blocked ${success.length} users on messenger${failed.length > 0 ? `\n» Block failure ${failed.length} user, id: ${failed.join(" ")}` : ""}`);
   }
   
-  
   else if (type == 'unBlockUser') {
     if (!body) return reply("Please enter uid of the people you want to unblock on messenger, you can enter multiple ids separated by space or newline", (e, info) => {
       global.client.handleReply.push({
@@ -356,10 +427,17 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
         type: 'unBlockUser'
       });
     });
-    const uids = body.replace(/\s+/g, " ").split(" ");
+    
+    // Detect target IDs from input (supports UID, link, name)
+    const targetIDs = await detectTargetIDsFromString(api, event, body);
+    
+    if (targetIDs.length === 0) {
+      return reply("❌ Could not detect any valid user IDs. Please enter UID, Facebook link, or @fullname.", threadID, messageID);
+    }
+    
     const success = [];
     const failed = [];
-    for (const uid of uids) {
+    for (const uid of targetIDs) {
       try {
         await api.changeBlockedStatus(uid, false);
         success.push(uid);
@@ -370,7 +448,6 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     }
     reply(`» Unblocked successfully ${success.length} users on messenger${failed.length > 0 ? `\n» Unblock failure ${failed.length} user, id: ${failed.join(" ")}` : ""}`);
   }
-  
   
   else if (type == 'createPost') {
     if (!body) return reply("Please enter the content you want to create the article", (e, info) => {
@@ -387,7 +464,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       av: botID,
       fb_api_req_friendly_name: "ComposerStoryCreateMutation",
       fb_api_caller_class: "RelayModern",
-      doc_id: "61582708907708",
+      doc_id: "100017985245260",
       variables: JSON.stringify({
         "input": {
           "composer_entry_point": "inline_composer",
@@ -456,7 +533,6 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     });
   }
   
-  
   else if (type == 'choiceIdCommentPost') {
     if (!body) return reply('Please enter the id of the post you want to comment on', (e, info) => {
       global.client.handleReply.push({
@@ -478,7 +554,6 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       });
     });
   }
-  
   
   else if (type == 'commentPost') {
     const { postIDs, isGroup } = handleReply;
@@ -551,7 +626,6 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     reply(`» Successfully commented ${success.length} posts${failed.length > 0 ? `\n» Comment failed ${failed.length} posts, postID: ${failed.join(" ")}` : ""}`);
   }
   
-  
   else if (type == 'deletePost') {
     const postIDs = body.replace(/\s+/g, " ").split(" ");
     const success = [];
@@ -606,7 +680,6 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     reply(`» Deleted successfully ${success.length} posts${failed.length > 0 ? `\n»Delete failed ${failed.length} posts, postID: ${failed.join(" ")}` : ""}`);
   }
   
-  
   else if (type == 'choiceIdReactionPost') {
     if (!body) return reply(`Please enter the post id you want to react to`, (e, info) => {
       global.client.handleReply.push({
@@ -629,7 +702,6 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       });
     })
   }
-  
   
   else if (type == 'reactionPost') {
     const success = [];
@@ -657,13 +729,18 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     reply(`» Released emotions ${feeling} give ${success.length} successful post${failed.length > 0 ? `» Reaction failed ${failed.length} posts, postID: ${failed.join(" ")}` : ''}`);
   }
   
-  
   else if (type == 'addFiends') {
-    const listID = body.replace(/\s+/g, " ").split(" ");
+    // Detect target IDs from input (supports UID, link, name)
+    const targetIDs = await detectTargetIDsFromString(api, event, body);
+    
+    if (targetIDs.length === 0) {
+      return reply("❌ Could not detect any valid user IDs. Please enter UID, Facebook link, or @fullname.", threadID, messageID);
+    }
+    
     const success = [];
     const failed = [];
     
-    for (const uid of listID) {
+    for (const uid of targetIDs) {
       const form = {
   			av: botID,
   			fb_api_caller_class: "RelayModern",
@@ -693,27 +770,37 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     reply(`» Friend request has been sent successfully to ${success.length} id${failed.length > 0 ? `\n» Send a friend request to ${failed.length} id failure: ${failed.join(" ")}` : ""}`);
   }
   
-  
   else if (type == 'choiceIdSendMessage') {
-    const listID = body.replace(/\s+/g, " ").split(" ");
-    reply(`Enter the text of the message you want to send ${listID.length} user`, (e, info) => {
+    // Detect target IDs from input (supports UID, link, name)
+    const targetIDs = await detectTargetIDsFromString(api, event, body);
+    
+    if (targetIDs.length === 0) {
+      return reply("❌ Could not detect any valid user IDs. Please enter UID, Facebook link, or @fullname.", threadID, messageID);
+    }
+    
+    reply(`Enter the text of the message you want to send ${targetIDs.length} user`, (e, info) => {
       global.client.handleReply.push({
         name: this.config.name,
         messageID: info.messageID,
         author: senderID,
-        listID,
+        listID: targetIDs,
         type: "sendMessage"
       });
     })
   }
   
-  
   else if (type == 'unFriends') {
-    const listID = body.replace(/\s+/g, " ").split(" ");
+    // Detect target IDs from input (supports UID, link, name)
+    const targetIDs = await detectTargetIDsFromString(api, event, body);
+    
+    if (targetIDs.length === 0) {
+      return reply("❌ Could not detect any valid user IDs. Please enter UID, Facebook link, or @fullname.", threadID, messageID);
+    }
+    
     const success = [];
     const failed = [];
     
-    for (const idUnfriend of listID) {
+    for (const idUnfriend of targetIDs) {
       const form = {
         av: botID,
         fb_api_req_friendly_name: "FriendingCometUnfriendMutation",
@@ -741,7 +828,6 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     reply(`» Deleted successfully ${success.length} friend${failed.length > 0 ? `\n» Delete failed ${failed.length} friend:\n${failed.join("\n")}` : ""}`);
   }
   
-  
   else if (type == 'sendMessage') {
     const listID = handleReply.listID;
     const success = [];
@@ -759,14 +845,18 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     reply(`» Message sent successfully to ${success.length} user${failed.length > 0 ? `\n» Send a message to ${failed.length} user failed: ${failed.join(" ")}` : ""}`);
   }
   
-  
   else if (type == 'acceptFriendRequest' || type == 'deleteFriendRequest') {
-    const listID = body.replace(/\s+/g, " ").split(" ");
+    // Detect target IDs from input (supports UID, link, name)
+    const targetIDs = await detectTargetIDsFromString(api, event, body);
+    
+    if (targetIDs.length === 0) {
+      return reply("❌ Could not detect any valid user IDs. Please enter UID, Facebook link, or @fullname.", threadID, messageID);
+    }
     
     const success = [];
     const failed = [];
     
-    for (const uid of listID) {
+    for (const uid of targetIDs) {
       const form = {
         av: botID,
   			fb_api_req_friendly_name: type == 'acceptFriendRequest' ? "FriendingCometFriendRequestConfirmMutation" : "FriendingCometFriendRequestDeleteMutation",
@@ -795,7 +885,6 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     reply(`» Is already ${type == 'acceptFriendRequest' ? 'accept' : 'erase'} successful friend request of ${success.length} id${failed.length > 0 ? `\n» Fail with ${failed.length} id: ${failed.join(" ")}` : ""}`);
   }
   
-  
   else if (type == 'noteCode') {
     axios({
       url: 'https://buildtool.dev/verification',
@@ -812,11 +901,10 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
   }
 };
 
-
 module.exports.run = async ({ event, api }) => {
   const { threadID, messageID, senderID } = event;
   
-  api.sendMessage("🔰𝐑𝐀𝐇𝐀𝐓 𝐁𝐎𝐓🔰Command List⚙️"
+  api.sendMessage("⚙️𝐑𝐀𝐇𝐀𝐓 𝐁𝐎𝐓 𝗖𝗺𝗱 𝗟𝗶𝘀𝘁⚙️"
      + "\n[01] Edit bot bio"
      + "\n[02] Edit bot nicknames"
      + "\n[03] View pending messages"
@@ -824,24 +912,29 @@ module.exports.run = async ({ event, api }) => {
      + "\n[05] View spam messages"
      + "\n[06] Change bot avatar"
      + "\n[07] Turn on the bot avatar shield <on/off>"
-     + "\n[08] Block users (messenger)"
-     + "\n[09] Unblock users (messenger)"
+     + "\n[08] Block users (messenger) - supports @mention/UID/link/name"
+     + "\n[09] Unblock users (messenger) - supports @mention/UID/link/name"
      + "\n[10] Create post"
      + "\n[11] Delete post"
      + "\n[12] Delete post (user)"
      + "\n[13] Comment the post (group)"
      + "\n[14] Drop post feelings"
-     + "\n[15] Make friends by id"
-     + "\n[16] Accept friend request by id"
-     + "\n[17] Decline friend request by id"
-     + "\n[18] Delete friends by id"
-     + "\n[19] Send a message by id"
+     + "\n[15] Make friends by id - supports @mention/UID/link/name"
+     + "\n[16] Accept friend request by id - supports @mention/UID/link/name"
+     + "\n[17] Decline friend request by id - supports @mention/UID/link/name"
+     + "\n[18] Delete friends by id - supports @mention/UID/link/name"
+     + "\n[19] Send a message by id - supports @mention/UID/link/name"
      + "\n[20] Make notes on buildtool.dev"
      + "\n[21] Log out of your account"
     + "\n````````````````````````````````"
     + `\n» Admin ID:\n${global.config.ADMINBOT.join("\n")}`
     + `\n» Bot ID: ${api.getCurrentUserID()}`
     + `\n» Please reply to this message with the order number you want to execute`
+    + "\n📌 Note: Options 08,09,15-19 support multiple mention methods:"
+    + "\n   • @mention (in group)"
+    + "\n   • UID (e.g., 1000123456789)"
+    + "\n   • Facebook link"
+    + "\n   • @Full Name (e.g., @John Doe)"
     + "\n````````````````````````````````", threadID, (err, info) => {
     global.client.handleReply.push({
       name: this.config.name,
@@ -852,7 +945,6 @@ module.exports.run = async ({ event, api }) => {
   }, messageID);
 };
 
-
 function getGUID() {
     const key = `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`;
     let timeNow = Date.now(),
@@ -862,8 +954,6 @@ function getGUID() {
             let b = (info == 'x' ? a : a & 7 | 8).toString(16);
             return b;
         });
-  console.log(r)
+    console.log(r)
     return r;
 }
-getGUID()
-////muhahhahahaha encode cái dmm
