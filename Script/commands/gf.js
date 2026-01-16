@@ -137,7 +137,7 @@ module.exports.run = async function ({ event, api, args }) {
     try {
         const path = await makeImage({ one, two });
         return api.sendMessage({ 
-            body: "✿┈┈┈┈༺♡༻┈┈┈┈✿\n👩‍❤️‍👨এই নে তোর কাইল্লা বোউরে👩‍❤️‍👨\n✿┈┈┈┈༺♡༻┈┈┈┈✿", 
+            body: "✿┈┈┈┈༺♡༻┈┈┈┈✿\n👩‍❤️‍👨এই নে তোর কাইল্লা বউ👩‍❤️‍👨\n✿┈┈┈┈༺♡༻┈┈┈┈✿", 
             attachment: fs.createReadStream(path) 
         }, threadID, () => fs.unlinkSync(path), messageID);
     } catch (error) {
