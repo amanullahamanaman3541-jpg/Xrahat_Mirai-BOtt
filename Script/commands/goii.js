@@ -2,7 +2,7 @@ module.exports.config = {
  name: "goiadmin",
  version: "1.0.0",
  hasPermssion: 0,
- credits: "SHAHADAT SAHU ",
+ credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
  description: "Bot will reply when someone tags any of the admins",
  commandCategory: "Other",
  usages: "@",
@@ -10,7 +10,7 @@ module.exports.config = {
 };
 
 module.exports.handleEvent = function({ api, event }) {
- const adminIDs = ["61582708907708", "100001039692046", "61576394315037"].map(String);
+ const adminIDs = ["61582708907708", "61584194023750", "61582311465479"].map(String);
  
  if (adminIDs.includes(String(event.senderID))) return;
 
