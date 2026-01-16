@@ -13,13 +13,13 @@ if (fs.existsSync(protectPath)) {
 }
 
 module.exports.config = {
-  name: "group",
+  name: "lock",
   version: "1.2.0",
   hasPermssion: 0,
-  credits: "rX",
-  description: "Manage your group: change name, emoji, image and protect them",
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
+  description: "Manage lock: change name, emoji, image and protect them",
   commandCategory: "Box",
-  usages: "!group name [name] | !group emoji [emoji] | !group image | !group set",
+  usages: "!lock on",
   cooldowns: 0,
   dependencies: []
 };
@@ -31,7 +31,7 @@ module.exports.run = async ({ api, event, args }) => {
   if (!subCommand) return api.sendMessage("❌ Please specify a subcommand: name, emoji, image, or set", threadID, event.messageID);
 
   // ------------------ Protect mode ------------------
-  if (subCommand === "set") {
+  if (subCommand === "on") {
     const threadInfo = await api.getThreadInfo(threadID);
     const emoji = threadInfo.emoji || "";
     const name = threadInfo.threadName || "";
