@@ -2,7 +2,7 @@ module.exports.config = {
   name: "copy",
   version: "1.0.0",
   hasPermssion: 0,
-  credits: "RxHelper",
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "Repeat a text N times in separate lines",
   commandCategory: "utility",
   usages: "!copy <Nx> <text>  | or reply a message then use: !copy <Nx>",
@@ -16,7 +16,7 @@ module.exports.run = async function ({ api, event, args }) {
 
     if (!args[0]) {
       return api.sendMessage(
-        "Usage:\n• !copy 60x I love you\n• (Reply a message) !copy 10x\n\nNote: max 100x",
+        "Usage:\n• !copy 40x Rahat\n• (Reply a message) !copy 10x",
         event.threadID, event.messageID
       );
     }
@@ -25,7 +25,7 @@ module.exports.run = async function ({ api, event, args }) {
     const timesMatch = String(args[0]).toLowerCase().match(/^(\d{1,3})x$/);
     if (!timesMatch) {
       return api.sendMessage(
-        "First argument must be like 10x / 60x / 100x.",
+        "আবাল সাথে x কী তোর নানি দিবো \n copy 40x Rahat",
         event.threadID, event.messageID
       );
     }
@@ -42,7 +42,7 @@ module.exports.run = async function ({ api, event, args }) {
 
     if (!text) {
       return api.sendMessage(
-        "Give some text to copy. Example:\n!copy 5x Hello\n(or reply any message then use !copy 5x)",
+        "Give some text to copy. Example:\n!copy 5x Rahat\n(or reply any message then use !copy 5x)",
         event.threadID, event.messageID
       );
     }
