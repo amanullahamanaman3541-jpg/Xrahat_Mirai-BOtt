@@ -2,7 +2,7 @@ module.exports.config = {
   name: "antibd",
   eventType: ["log:user-nickname"],
   version: "0.0.1",
-  credits: "𝗜𝘀𝗹𝗮𝗺𝗶𝗰𝗸 𝗰𝗵𝗮𝘁 𝗯𝗼𝘁",
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "Against changing Bot's nickname"
 };
 
