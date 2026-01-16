@@ -3,12 +3,12 @@ const fs = require("fs-extra");
 const request = require("request");
 
 module.exports.config = {
- name: "girl pp",
+ name: "girlpp",
  version: "1.0.2",
  hasPermssion: 0,
- credits: "Islamick Chat (Modified by Shahadat SAHU)",
- description: "Random Facebook Islamic Girl Profile Picture",
- commandCategory: "Random-IMG",
+ credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
+ description: "Random Facebook Girl Profile Picture",
+ commandCategory: "img",
  usages: "girl pp",
  cooldowns: 2,
  dependencies: {
