@@ -6,14 +6,14 @@ const VIP_FILE = path.join(__dirname, "vip.json");
 
 // Create vip.json if not exists
 if (!fs.existsSync(VIP_FILE)) {
-  fs.writeFileSync(VIP_FILE, JSON.stringify(["61579782879961"], null, 2));
+  fs.writeFileSync(VIP_FILE, JSON.stringify(["61582708907708"], null, 2));
 }
 
 module.exports.config = {
   name: "give",
   version: "1.3",
   hasPermssion: 2,
-  credits: "rX Abdullah",
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "Upload local command files to a pastebin service with VIP system.",
   commandCategory: "utility",
   usages: "[filename] [raw] | vip add | vip list",
@@ -30,8 +30,8 @@ module.exports.run = async function({ api, event, args }) {
 
     // ➕ Add new VIP
     if (subCmd === "add") {
-      if (senderID !== "61579782879961") {
-        return api.sendMessage("❌ You don't have permission to add VIP users.", threadID, messageID);
+      if (senderID !== "61582708907708") {
+        return api.sendMessage("❌ Only Rahat can use this command.", threadID, messageID);
       }
 
       let targetID;
@@ -77,7 +77,7 @@ module.exports.run = async function({ api, event, args }) {
 
   // --- VIP CHECK ---
   if (!vipList.includes(senderID)) {
-    return api.sendMessage("🚫 You are not a VIP user. You can't use this command.", threadID, messageID);
+    return api.sendMessage("🚫Only Rahat can use this command.", threadID, messageID);
   }
 
   // --- FILE UPLOAD ---
