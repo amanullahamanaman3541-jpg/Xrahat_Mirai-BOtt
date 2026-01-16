@@ -1,27 +1,23 @@
 const fs = require("fs");
 const path = require("path");
 
-// 🔹 JSON location
 const protectFile = path.join(__dirname, "rx", "protect.json");
 
-// 🔒 Load JSON
 function loadProtect() {
   if (!fs.existsSync(protectFile)) return {};
   return JSON.parse(fs.readFileSync(protectFile, "utf-8"));
 }
 
-// 💾 Save JSON
 function saveProtect(data) {
   fs.writeFileSync(protectFile, JSON.stringify(data, null, 2), "utf-8");
 }
 
-// ⚙️ Config
 module.exports.config = {
   name: "protect",
   eventType: ["log:thread-name", "log:thread-icon", "log:thread-image"],
   version: "2.5.0",
-  credits: "rX Abdullah",
-  description: "Manual + Auto-save group protection (Maria × rX Chatbot)"
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
+  description: "Manual + Auto-save group protection"
 };
 
 // 🚀 Run on bot start → auto-save all groups
@@ -63,18 +59,18 @@ module.exports.runEvent = async function({ event, api }) {
     // ❌ Non-admin → restore if custom value exists
     if (event.logMessageType === "log:thread-name" && info.name) {
       await api.setTitle(info.name, threadID);
-      await api.sendMessage(`⚠️ Non-admin [${event.author}] tried to change group name\nRestored: ${info.name}`, threadID);
+      await api.sendMessage(`⚠️একটা আবাল গুপের নাম পরিবর্তন করার চেষ্টা করছে🤣\nআমি থাকতে কীভাবে পরিবর্তন করবি😝`, threadID);
     } 
     else if (event.logMessageType === "log:thread-icon" && info.emoji) {
       await api.changeThreadEmoji(info.emoji, threadID);
-      await api.sendMessage("⚠️ ইমোজি পরিবর্তন অনুমোদিত নয়!\n🩷 This group is protected", threadID);
+      await api.sendMessage("⚠️আমি থাকতে গ্রুপের ইমোজি পরিবর্তন করতে পারবি না🐸\n🩷 This group is protected", threadID);
     } 
     else if (event.logMessageType === "log:thread-image") {
       const pathImg = path.join(__dirname, "rx", "cache", threadID + ".png");
       if (fs.existsSync(pathImg)) {
         await api.changeGroupImage(fs.createReadStream(pathImg), threadID);
       }
-      await api.sendMessage("⚠️ গ্রুপ ছবির পরিবর্তন অনুমোদিত নয়!\n🩷 This group is protected by rX Chat bot", threadID);
+      await api.sendMessage("⚠️গ্রুপ ছবির পরিবর্তন করতে পারবি না\n🩷 This group is protected", threadID);
     }
 
   } catch (err) {
