@@ -3,10 +3,10 @@
 //var b = res.data.description;
 //var c = res.data.image;
 ﻿module.exports.config = {
-  name: "siteinf",
+  name: "siteinfo",
   version: "1.0.0",
   hasPermssion: 0,
-  credits: "𝐂𝐘𝐁𝐄𝐑 ☢️_𖣘 -𝐁𝐎𝐓 ⚠️ 𝑻𝑬𝑨𝑴_ ☢️",
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "View site info",
   commandCategory: "info",
   usages: "[site]",
