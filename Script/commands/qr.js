@@ -2,7 +2,7 @@ module.exports.config = {
   name: "qr",
   version: "1.3.0",
   hasPermssion: 0,
-  credits: "rX Abdullah",
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "Generate styled QR code from text (clean red/pink theme)",
   commandCategory: "user",
   usages: "[text]",
@@ -22,7 +22,7 @@ module.exports.run = async function ({ api, event, args }) {
 
   if (!text)
     return api.sendMessage(
-      "❌ Please enter some text to generate QR!",
+      "❌ Please enter some text to generate",
       event.threadID,
       event.messageID
     );
@@ -64,7 +64,7 @@ module.exports.run = async function ({ api, event, args }) {
 
     api.sendMessage(
       {
-        body: "💖 Here's your QR code!",
+        body: "✅Here's your QR code👇🏽",
         attachment: createReadStream(finalPath)
       },
       event.threadID,
