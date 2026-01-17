@@ -2,7 +2,7 @@ module.exports.config = {
   name: "tag",
   version: "1.0.2",
   hasPermssion: 0,
-  credits: "RxHelper",
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "Tag someone N times (each in separate messages, optional text)",
   commandCategory: "utility",
   usages: "!tag <Nx> @mention [optional text] | or reply a message then use: !tag <Nx> [optional text]",
@@ -16,7 +16,7 @@ module.exports.run = async function ({ api, event, args }) {
 
     if (!args[0]) {
       return api.sendMessage(
-        "Usage:\n• !tag 20x @someone\n• !tag 10x @someone good morning\n• (Reply a user) !tag 5x hello\n\nNote: max 100x",
+        "Usage:\n!tag 10x @mention good morning",
         event.threadID, event.messageID
       );
     }
