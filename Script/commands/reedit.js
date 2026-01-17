@@ -2,7 +2,7 @@ module.exports.config = {
   name: "reedit",
   version: "1.0.6",
   hasPermssion: 0,
-  credits: "rX",
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "Directly edit bot's replied message",
   commandCategory: "fun",
   usages: "reply to a bot message then type !edit <text>",
