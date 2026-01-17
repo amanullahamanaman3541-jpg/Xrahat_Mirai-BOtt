@@ -2,7 +2,7 @@ module.exports.config = {
   name: "hi",
   version: "1.0.0",
   hasPermssion: 0,
-  credits: "rX",
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "hi sticker",
   commandCategory: "QTV BOX",
   usages: "[text]",
@@ -63,7 +63,7 @@ module.exports.handleEvent = async ({ event, api, Users }) => {
       tag: name,
       id: event.senderID
     })
-    let msg = {body: `Hi ${name}, have a good ${session}`, mentions}
+    let msg = {body: ``, mentions}
     api.sendMessage(msg, event.threadID, (e, info) => {
       setTimeout(() => {
         api.sendMessage({sticker: sticker}, event.threadID);
