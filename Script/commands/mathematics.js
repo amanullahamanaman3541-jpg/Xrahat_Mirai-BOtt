@@ -2,9 +2,9 @@ module.exports.config = {
 	name: "mathematics",
 	version: "1.0.0",
 	hasPermssion: 0,
-	credits: "rX",
+	credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
 	description: "",
-	commandCategory: "Study, learn more, learn forever",
+	commandCategory: "Education",
 	cooldowns: 0
 };
 
