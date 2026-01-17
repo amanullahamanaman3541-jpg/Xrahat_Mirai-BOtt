@@ -2,7 +2,7 @@ module.exports.config = {
   name: "setprofile",
   version: "1.0.0",
   hasPermssion: 2,
-  credits: "rX Abdullah",
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "Reply to a photo to set it as bot's profile picture",
   commandCategory: "Admin",
   usages: "[reply to image]",
