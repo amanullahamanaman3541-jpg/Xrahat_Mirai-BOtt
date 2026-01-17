@@ -1,7 +1,6 @@
 /**
  * scan.js
  * QR Code Scanner Command (Reply Image Version)
- * rxabdullah-fca compatible
  */
 
 const fs = require("fs");
@@ -14,7 +13,7 @@ module.exports.config = {
   name: "scan",
   version: "1.0.0",
   hasPermssion: 0,
-  credits: "rX",
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "Scan QR code from a replied image",
   commandCategory: "user",
   usages: "!scan (reply to an image containing QR code)",
@@ -27,7 +26,7 @@ module.exports.run = async function({ api, event }) {
 
   // Check if user replied to a message
   if (!messageReply || !messageReply.attachments || messageReply.attachments.length === 0) {
-    return api.sendMessage("> 🎀\nPlease reply to a QR code image!", threadID, messageID);
+    return api.sendMessage("❌Please reply to a QR code image!", threadID, messageID);
   }
 
   const attachment = messageReply.attachments[0];
@@ -58,7 +57,7 @@ module.exports.run = async function({ api, event }) {
     });
 
     // Send the QR code result
-    return api.sendMessage(`> 🎀\n𝐫𝐞𝐬𝐮𝐥𝐭: ${value.result}`, threadID, messageID);
+    return api.sendMessage(`✅𝐫𝐞𝐬𝐮𝐥𝐭: ${value.result}`, threadID, messageID);
 
   } catch (err) {
     console.log("QR Scan Error:", err);
