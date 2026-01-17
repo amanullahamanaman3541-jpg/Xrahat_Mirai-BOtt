@@ -68,8 +68,8 @@ async function readContent({ event, args }) {
 module.exports.config = {
   name: "paste",
   version: "2.0.0",
-  hasPermssion: 2,               // ✅ শুধুই BOT ADMIN
-  credits: "rX | Maria",
+  hasPermssion: 2,              
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "টেক্সট/এরর লগ Pastebin-এ পেস্ট করে লিংক দেয় (শুধু অ্যাডমিন)",
   commandCategory: "Utility",
   usages: "paste <text> | reply paste",
@@ -79,14 +79,14 @@ module.exports.config = {
 module.exports.run = async function({ api, event, args }) {
   // ডাবল সেফটি—framework এ hasPermssion:2 আছে, তবুও নিজেরা চেক করছি
   if (!isBotAdmin(api, event)) {
-    return api.sendMessage("⛔ এই কমান্ড শুধু BOT ADMIN ব্যবহার করতে পারবে।", event.threadID, event.messageID);
+    return api.sendMessage("⛔এই কমান্ড শুধু BOT ADMIN ব্যবহার করতে পারবে।", event.threadID, event.messageID);
   }
 
   try {
     const content = await readContent({ event, args });
     if (!content) {
       return api.sendMessage(
-        "⚠️ কি পেস্ট করবে? টেক্সট লিখে দাও অথবা কোনো মেসেজ/ফাইলে reply করে `paste` দাও।",
+        "⚠️কি পেস্ট করবে?\nটেক্সট লিখে দাও অথবা কোনো মেসেজ/ফাইলে reply করো",
         event.threadID,
         event.messageID
       );
@@ -106,10 +106,9 @@ module.exports.run = async function({ api, event, args }) {
     const out = await uploadToPastebin(content, title, expire, privacy);
 
     const msg =
-      `✅ Paste created (Pastebin)\n` +
-      `🔗 URL: ${out.url}\n` +
-      `📄 RAW: ${out.raw}\n` +
-      `ℹ️ Flags: -exp <N/10M/1H/1D/...>, -pub (public)`;
+      `✅𝗣𝗮𝘀𝘁𝗲 𝗰𝗿𝗲𝗮𝘁𝗲𝗱\n` +
+      `🔗𝗨𝗥𝗟👇🏻\n${out.url}\n\n` +
+      `📄𝗥𝗔𝗪👇🏼\n${out.raw}`;
 
     return api.sendMessage(msg, event.threadID, event.messageID);
   } catch (err) {
