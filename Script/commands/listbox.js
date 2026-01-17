@@ -1,7 +1,7 @@
 module.exports.config = {
   name: 'listbox',
   version: '1.0.1',
-  credits: '𝐫𝐗',
+  credits: '🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰',
   hasPermssion: 2,
   description: 'List threads where bot is active',
   commandCategory: 'System',
