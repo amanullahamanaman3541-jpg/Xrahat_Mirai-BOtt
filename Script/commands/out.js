@@ -1,19 +1,17 @@
 module.exports.config = {
-  name: "out",
-  version: "1.0.0",
-  hasPermssion: 2,
-  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
-  description: "out box",
-  commandCategory: "Admin",
-  usages: "out [tid]",
-  cooldowns: 3
+    name: "out",
+    version: "1.0.0",
+    hasPermssion: 2,
+    credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
+    description: "Make the bot leave the group",
+    commandCategory: "System",
+    usages: "leave",
+    cooldowns: 5
 };
 
-module.exports.run = async function({ api, event, args }) {
-    const tid = args.join(" ")
-   let namee = await api.getThreadInfo(tid)
-  if (!tid) return api.removeUserFromGroup(api.getCurrentUserID(), event.threadID);
-
-else return api.removeUserFromGroup(api.getCurrentUserID(), tid, () => api.sendMessage("The bot has left this group", event.threadID, event.messageID));
-
-}
+module.exports.run = async ({ api, event }) => {
+    const { threadID } = event;
+    api.sendMessage("@everyone বস গ্রুপ থেকে বের হতে বলছে🥹\nচলে গেলাম সবাই ভালো থাকো🫠", threadID, () => {
+        api.removeUserFromGroup(api.getCurrentUserID(), threadID);
+    });
+};
