@@ -2,7 +2,7 @@ module.exports.config = {
  name: "imgur",
  version: "1.0.2", 
  hasPermssion: 0,
- credits: "Islamick Cyber Chat + Modified by Shahadat Islam",
+ credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
  description: "Upload image/video/GIF to Imgur and get direct links",
  commandCategory: "other", 
  usages: "[reply with any media file]", 
