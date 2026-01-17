@@ -1,11 +1,11 @@
 module.exports.config = {
     name: "sala",
-    version: "1.0.0",
+    version: "2.0.0",
     hasPermssion: 0,
-    credits: "Modified by rX Abdullah",
+    credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
     description: "Tui amar sala bonding photo edit",
-    commandCategory: "Bonding",
-    usages: "[tag]",
+    commandCategory: "🩵love🩵",
+    usages: "[@mention/reply/UID/link/name]",
     cooldowns: 5,
     dependencies: {
         "axios": "",
@@ -14,6 +14,25 @@ module.exports.config = {
         "jimp": ""
     }
 };
+
+async function getUIDByFullName(api, threadID, body) {
+    if (!body.includes("@")) return null;
+    
+    const match = body.match(/@(.+)/);
+    if (!match) return null;
+    
+    const targetName = match[1].trim().toLowerCase().replace(/\s+/g, " ");
+    const threadInfo = await api.getThreadInfo(threadID);
+    const users = threadInfo.userInfo || [];
+    
+    const user = users.find(u => {
+        if (!u.name) return false;
+        const fullName = u.name.trim().toLowerCase().replace(/\s+/g, " ");
+        return fullName === targetName;
+    });
+    
+    return user ? user.id : null;
+}
 
 module.exports.onLoad = async () => {
     const { resolve } = global.nodemodule["path"];
@@ -67,16 +86,86 @@ async function circle(image) {
     return await image.getBufferAsync("image/png");
 }
 
-module.exports.run = async function ({ event, api }) {
+module.exports.run = async function ({ event, api, args }) {
     const fs = global.nodemodule["fs-extra"];
     const { threadID, messageID, senderID } = event;
-    const mention = Object.keys(event.mentions);
-    if (!mention[0]) return api.sendMessage("একজনকে ট্যাগ কর সালা বানানোর জন্য 😈", threadID, messageID);
-
-    const one = senderID, two = mention[0];
-    return makeImage({ one, two }).then(path =>
-        api.sendMessage({
-            body: "তুই আমার বন্ধু না, তুই আমার সালা 😏🔥",
-            attachment: fs.createReadStream(path)
-        }, threadID, () => fs.unlinkSync(path), messageID));
+    
+    // ===== Determine targetID in three ways =====
+    let targetID;
+    
+    if (event.type === "message_reply") {
+        // Way 1: Reply to a message
+        targetID = event.messageReply.senderID;
+    } else if (args[0]) {
+        if (args[0].indexOf(".com/") !== -1) {
+            // Way 2: Facebook profile link
+            try {
+                targetID = await api.getUID(args[0]);
+            } catch (e) {
+                console.error("Error getting UID from link:", e);
+                targetID = null;
+            }
+        } else if (args.join().includes("@")) {
+            // Way 3: Mention or full name
+            // 3a: Direct Facebook mention
+            targetID = Object.keys(event.mentions || {})[0];
+            if (!targetID) {
+                // 3b: Full name detection
+                targetID = await getUIDByFullName(api, event.threadID, args.join(" "));
+            }
+        } else {
+            // Direct UID
+            targetID = args[0];
+        }
+    } else {
+        // No target specified - check traditional mentions
+        const mention = Object.keys(event.mentions || {});
+        if (!mention[0]) {
+            return api.sendMessage("❌আপনার নেংটা কালের বন্ধুকে মেনশন দিন😈", threadID, messageID);
+        }
+        targetID = mention[0];
+    }
+    
+    if (!targetID) {
+        return api.sendMessage("❌রাহাদ বসকে ডাক দে🫩\nকীভাবে কমান্ড ব্যবহার করতে হয় শিখায় দিবো🥴", threadID, messageID);
+    }
+    
+    // Check if trying to make sala with oneself
+    if (targetID === senderID) {
+        return api.sendMessage("🐸বলদ নিজের মেসেজ এর রিপ্লাই দিলে হবে না\nঅন্য জনের মেসেজ এর রিপ্লাই দে", threadID, messageID);
+    }
+    
+    // Get user names for personalized message
+    let userName1, userName2;
+    try {
+        const userInfo = await api.getUserInfo([senderID, targetID]);
+        userName1 = userInfo[senderID]?.name || "আমি";
+        userName2 = userInfo[targetID]?.name || "তুমি";
+    } catch (e) {
+        userName1 = "আমি";
+        userName2 = "তুমি";
+    }
+    
+    const one = senderID, two = targetID;
+    
+    const salaMessages = [
+        `তুই আমার বন্ধু না, তুই আমার সালা 😏🔥`,
+        `${userName2}, তুই আমার সালা হয়ে গেলি! 😂`,
+        `সালা বন্ধন: ${userName1} ❤️ ${userName2} 👬`,
+        `এইবার থেকে তুই আমার সালা ${userName2}! 😈`,
+        `সালা হলেই বন্ধুত্বের কমিটমেন্ট বাড়ে! ${userName1} + ${userName2} = সালা ❤️`
+    ];
+    
+    const randomMessage = salaMessages[Math.floor(Math.random() * salaMessages.length)];
+    
+    try {
+        const path = await makeImage({ one, two });
+        return api.sendMessage({ 
+            body: randomMessage,
+            attachment: fs.createReadStream(path) 
+        }, threadID, () => fs.unlinkSync(path), messageID);
+    } catch (error) {
+        console.error("Error creating image:", error);
+        return api.sendMessage("❌ ছবি তৈরি করতে সমস্যা হয়েছে!", threadID, messageID);
+    }
 };
