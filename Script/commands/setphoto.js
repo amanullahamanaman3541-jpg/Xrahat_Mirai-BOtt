@@ -5,8 +5,8 @@ const axios = require("axios");
 module.exports.config = {
   name: "setphoto",
   version: "1.0.0",
-  hasPermssion: 2, // শুধুমাত্র admin বা owner চালাতে পারবে (0 দিলে সবাই পারবে)
-  credits: "rX Abdullah",
+  hasPermssion: 2,
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "Bot-এর প্রোফাইল ছবি পরিবর্তন করুন একটি ছবির রিপ্লাই বা অ্যাটাচমেন্ট দিয়ে",
   commandCategory: "system",
   usages: "Reply a photo with !set photo",
@@ -32,7 +32,7 @@ module.exports.run = async function ({ api, event }) {
 
     if (!photoAttachment) {
       return api.sendMessage(
-        "> 🎀\n𝐏𝐥𝐚𝐲 𝐰𝐢𝐭𝐡 𝐩𝐡𝐨𝐭𝐨",
+        "⏳𝐏𝐥𝐚𝐲 𝐰𝐢𝐭𝐡 𝐩𝐡𝐨𝐭𝐨....",
         event.threadID,
         event.messageID
       );
@@ -65,13 +65,13 @@ module.exports.run = async function ({ api, event }) {
           console.error(err);
           return api.sendMessage("❌ প্রোফাইল ছবি পরিবর্তন ব্যর্থ হয়েছে!", event.threadID);
         }
-        return api.sendMessage("> 🎀\n𝐎𝐤 𝐝𝐨𝐧𝐞 𝐛𝐚𝐛𝐲..!", event.threadID);
+        return api.sendMessage("✅𝐎𝐤 𝐝𝐨𝐧𝐞 𝐛𝐚𝐛𝐲..!", event.threadID);
       });
     });
 
     writer.on("error", (err) => {
       console.error(err);
-      api.sendMessage("> 🎀\n𝐒𝐨𝐫𝐫𝐲 𝐛𝐚𝐛𝐲 𝐬𝐨𝐦𝐞𝐭𝐡𝐢𝐧𝐠 𝐰𝐫𝐨𝐧𝐠!", event.threadID);
+      api.sendMessage("❌𝐒𝐨𝐫𝐫𝐲 𝐛𝐚𝐛𝐲 𝐬𝐨𝐦𝐞𝐭𝐡𝐢𝐧𝐠 𝐰𝐫𝐨𝐧𝐠!", event.threadID);
     });
 
   } catch (err) {
