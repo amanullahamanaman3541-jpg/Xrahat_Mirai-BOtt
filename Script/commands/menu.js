@@ -14,7 +14,7 @@ module.exports.config = {
   name: "menu",
   version: "1.2.0",
   hasPermssion: 2,
-  credits: "rX Abdullah + ChatGPT",
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "Bot Control Center (Menu Only)",
   commandCategory: "system",
   usages: "menu",
