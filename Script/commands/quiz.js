@@ -4,7 +4,7 @@ module.exports.config = {
   name: "quiz",
   version: "2.3.3",
   hasPermssion: 0,
-  credits: "RUBISH API + Mention Update by rX",
+  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "Bangla Quiz with Coins System (Free to Play)",
   usePrefix: false,
   commandCategory: "Game",
