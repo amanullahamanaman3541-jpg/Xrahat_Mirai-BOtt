@@ -2,7 +2,7 @@ module.exports.config = {
  name: "pic",
  version: "1.0.0",
  hasPermssion: 0,
- credits: "rX",
+ credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
  description: "Image search",
  commandCategory: "Search",
  usages: "[Text]",
@@ -16,7 +16,7 @@ module.exports.run = async function({ api, event, args }) {
  const apis = await axios.get('https://raw.githubusercontent.com/shaonproject/Shaon/main/api.json')
  const Shaon = apis.data.api
  
- if(keySearch.includes("-") == false) return api.sendMessage('Please enter in the format, example: pic mia khalifa-10 (it depends on you how many images you want to appear in the result) credit by rX Abdullah', event.threadID, event.messageID)
+ if(keySearch.includes("-") == false) return api.sendMessage('❌example: !pic Rahat-10', event.threadID, event.messageID)
  const keySearchs = keySearch.substr(0, keySearch.indexOf('-'))
  const numberSearch = keySearch.split("-").pop() || 6
  const res = await axios.get(`${Shaon}/pinterest?search=${encodeURIComponent(keySearchs)}`);
