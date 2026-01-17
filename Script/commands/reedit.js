@@ -1,5 +1,5 @@
 module.exports.config = {
-  name: "reedit",
+  name: "editx",
   version: "1.0.6",
   hasPermssion: 0,
   credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
