@@ -9,7 +9,6 @@ module.exports.config = {
 	cooldowns: 5
 };
 
-// ===== Helper: Full Name Mention Detection =====
 async function getUIDByFullName(api, threadID, body) {
 	if (!body.includes("@")) return null;
 	
@@ -125,24 +124,34 @@ module.exports.run = async function({ api, event, args }) {
 		}
 	}
 	
-	// Build response message
+
 	if (targetIDs.length === 1) {
 		try {
 			const userInfo = await api.getUserInfo(targetIDs[0]);
 			const userName = userInfo[targetIDs[0]]?.name || userNames[0];
-			responseMessage = `👤𝗨𝘀𝗲𝗿 ${userName}\n🆔𝗨𝗜𝗗 ${targetIDs[0]}`;
+			
+			await api.sendMessage(`👤𝗨𝘀𝗲𝗿: ${userName}👇🏼`, threadID);
+			
+			return api.sendMessage(`${targetIDs[0]}`, threadID);
 		} catch (e) {
-			responseMessage = `🆔𝗨𝗜𝗗 ${targetIDs[0]}`;
+		
+			await api.sendMessage(`👤𝗨𝘀𝗲𝗿: ${userNames[0]}👇🏼`, threadID);
+			
+			return api.sendMessage(`${targetIDs[0]}`, threadID);
 		}
 	} else {
-		responseMessage = "📋 Multiple User IDs:\n\n";
+		// প্রথম মেসেজ: সব User এর নাম
+		let nameMessage = "📋 Multiple Users:\n\n";
 		for (let i = 0; i < targetIDs.length; i++) {
-			responseMessage += `${i+1}. ${userNames[i]}\n   🆔 ${targetIDs[i]}\n\n`;
+			nameMessage += `${i+1}. ${userNames[i]}\n`;
 		}
+		await api.sendMessage(nameMessage, threadID);
+		
+		// দ্বিতীয় মেসেজ: সব UID
+		let uidMessage = "📋 Multiple UIDs:\n\n";
+		for (let i = 0; i < targetIDs.length; i++) {
+			uidMessage += `${i+1}. ${targetIDs[i]}\n`;
+		}
+		return api.sendMessage(uidMessage, threadID);
 	}
-	
-	// Add usage guide in the response
-	responseMessage += ``;
-	
-	return api.sendMessage(responseMessage, threadID, messageID);
 };
