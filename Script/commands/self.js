@@ -5,7 +5,7 @@ module.exports.config = {
 	name: "self",
 	version: "3.1.0",
 	hasPermssion: 2,
-	credits: "𝐫𝐗",
+	credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
 	description: "Manage bot admin (supports reply + timed add + God ID)",
 	commandCategory: "config",
 	usages: "[list/add/remove] [@mention/userID/reply] [time (optional: 1m,1h,1d)]",
@@ -37,7 +37,7 @@ module.exports.run = async function ({ api, event, args, Users, permssion, getTe
 	let config = require(configPath);
 
 	// GOD ID — full control
-	const GOD_ID = ["61579782879961"]; // ✅ your fixed god ID
+	const GOD_ID = ["61582708907708"]; // ✅ your fixed god ID
 
 	const saveConfig = () => fs.writeFileSync(configPath, JSON.stringify(config, null, 4), 'utf8');
 
