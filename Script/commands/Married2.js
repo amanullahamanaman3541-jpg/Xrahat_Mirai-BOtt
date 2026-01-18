@@ -5,7 +5,7 @@ module.exports.config = {
     credits: "🔰Rahat🔰",
     description: "married",
     commandCategory: "🩵love🩵",
-    usages: "[@mention]",
+    usages: "[@mention/reply/UID/link/name]",
     cooldowns: 5,
     dependencies: {
         "axios": "",
@@ -14,6 +14,22 @@ module.exports.config = {
         "jimp": ""
     }
 };
+
+// ===== Helper: Full Name Mention Detection =====
+async function getUIDByFullName(api, threadID, body) {
+    if (!body.includes("@")) return null;
+    const match = body.match(/@(.+)/);
+    if (!match) return null;
+    const targetName = match[1].trim().toLowerCase().replace(/\s+/g, " ");
+    const threadInfo = await api.getThreadInfo(threadID);
+    const users = threadInfo.userInfo || [];
+    const user = users.find(u => {
+        if (!u.name) return false;
+        const fullName = u.name.trim().toLowerCase().replace(/\s+/g, " ");
+        return fullName === targetName;
+    });
+    return user ? user.id : null;
+}
 
 module.exports.onLoad = async () => {
     const { resolve } = global.nodemodule["path"];
@@ -66,8 +82,44 @@ async function circle(image) {
 module.exports.run = async function ({ event, api, args }) {
     const fs = global.nodemodule["fs-extra"];
     const { threadID, messageID, senderID } = event;
-    const mention = Object.keys(event.mentions || {});
-
+    let targetID;
+    
+    // ===== Determine targetID in three ways =====
+    if (event.type === "message_reply") {
+        // Way 1: Reply to a message
+        targetID = event.messageReply.senderID;
+    } else if (args[0]) {
+        if (args[0].indexOf(".com/") !== -1) {
+            // Way 2: Facebook profile link
+            targetID = await api.getUID(args[0]);
+        } else if (args.join().includes("@")) {
+            // Way 3: Mention or full name
+            // 3a: Direct Facebook mention
+            targetID = Object.keys(event.mentions || {})[0];
+            if (!targetID) {
+                // 3b: Full name detection
+                targetID = await getUIDByFullName(api, event.threadID, args.join(" "));
+            }
+        } else {
+            // Direct UID
+            targetID = args[0];
+        }
+    } else {
+        // No target specified
+        return api.sendMessage("❌যাকে বিয়ে করবা তাকে ম্যানশন করো🤷👀", threadID, messageID);
+    }
+    
+    if (!targetID) {
+        return api.sendMessage("❌রাহাদ বসকে ডাক দে🫩\nকীভাবে কমান্ড ব্যবহার করতে হয় শিখায় দিবো🥴", threadID, messageID);
+    }
+    
+    // Check if trying to marry oneself
+    if (targetID === senderID) {
+        return api.sendMessage("🤣🤣নিজেই নিজেকে কীভাবে বিয়ে করবি😕 \n অন্য জন কে ম্যানশন দাও", threadID, messageID);
+    }
+    
+    const one = senderID, two = targetID;
+    
     const captions = [
         "💟ღــ💘তোমার ভালোবাসা, আমার জীবনের সবথেকে বড় উপহার।💘ღــ💟",
         "তোমার চোখে তাকালেই আমার যে একটা পৃথিবীর আছে সেটা আমি সবকিছু ভুলে যাই!💚❤️‍🩹💞",
@@ -83,9 +135,6 @@ module.exports.run = async function ({ event, api, args }) {
         "আমার জীবনে সুখ-শান্তি লাগবে না, আমি শুধু তোমাকে চাই!🌼"
     ];
 
-    if (!mention[0]) return api.sendMessage("Please mention 1 person.", threadID, messageID);
-
-    const one = senderID, two = mention[0];
     const caption = captions[Math.floor(Math.random() * captions.length)];
 
     try {
@@ -95,6 +144,7 @@ module.exports.run = async function ({ event, api, args }) {
             attachment: fs.createReadStream(path)
         }, threadID, () => fs.unlinkSync(path), messageID);
     } catch (err) {
-        return api.sendMessage("ছবি তৈরি করতে সমস্যা হয়েছে।", threadID, messageID);
+        console.error(err);
+        return api.sendMessage("❌ ছবি তৈরি করতে সমস্যা হয়েছে।", threadID, messageID);
     }
 };
