@@ -10,75 +10,57 @@ module.exports.config = {
   credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "Wanted with thin bars",
   commandCategory: "fun",
-  usages: "jail @tag",
+  usages: "jail [@mention/reply/UID/link/name]",
   cooldowns: 10
 };
 
-module.exports.run = async function ({ api, event, Users }) {
-  const { threadID, messageID, mentions, senderID, type, messageReply } = event;
+// ===== Helper: Full Name Mention Detection =====
+async function getUIDByFullName(api, threadID, body) {
+  if (!body.includes("@")) return null;
+  const match = body.match(/@(.+)/);
+  if (!match) return null;
+  const targetName = match[1].trim().toLowerCase().replace(/\s+/g, " ");
+  const threadInfo = await api.getThreadInfo(threadID);
+  const users = threadInfo.userInfo || [];
+  const user = users.find(u => {
+    if (!u.name) return false;
+    const fullName = u.name.trim().toLowerCase().replace(/\s+/g, " ");
+    return fullName === targetName;
+  });
+  return user ? user.id : null;
+}
 
-  let uid;
-  let name = "Wanted";
-
-  if (type == "message_reply") {
-    uid = messageReply.senderID;
-    name = await Users.getNameUser(uid);
-  } else if (!mentions || Object.keys(mentions).length == 0) {
-    uid = senderID;
-    name = await Users.getNameUser(uid);
+// ===== Helper: Get Target User =====
+async function getTargetUser(api, event, args) {
+  let targetID;
+  
+  // ===== Determine targetID in three ways =====
+  if (event.type === "message_reply") {
+    // Way 1: Reply to a message
+    targetID = event.messageReply.senderID;
+  } else if (args[0]) {
+    if (args[0].indexOf(".com/") !== -1) {
+      // Way 2: Facebook profile link
+      targetID = await api.getUID(args[0]);
+    } else if (args.join().includes("@")) {
+      // Way 3: Mention or full name
+      // 3a: Direct Facebook mention
+      targetID = Object.keys(event.mentions || {})[0];
+      if (!targetID) {
+        // 3b: Full name detection
+        targetID = await getUIDByFullName(api, event.threadID, args.join(" "));
+      }
+    } else {
+      // Direct UID
+      targetID = args[0];
+    }
   } else {
-    uid = Object.keys(mentions)[0];
-    name = await Users.getNameUser(uid);
+    // No target specified - jail yourself
+    targetID = event.senderID;
   }
-
-  try {
-    const cacheDir = path.join(__dirname, "cache");
-    if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
-
-    const avatarCache = path.join(cacheDir, `jail_avatar_${uid}.jpg`);
-    const wantedPath = path.join(cacheDir, `jail_${Date.now()}.png`);
-
-    // ===== Download profile picture =====
-    const fbPicUrl = `https://graph.facebook.com/${uid}/picture?height=1500&width=1500&access_token=6628568379|c1e620fa708a1d5696fb991c1bde5662`;
-
-    const downloadAvatar = () => new Promise((resolve, reject) => {
-      request(encodeURI(fbPicUrl))
-        .pipe(fs.createWriteStream(avatarCache))
-        .on("close", resolve)
-        .on("error", async () => {
-          // fallback image
-          const defaultImg = "https://i.imgur.com/8Q2Z3tI.png";
-          request(defaultImg)
-            .pipe(fs.createWriteStream(avatarCache))
-            .on("close", resolve)
-            .on("error", reject);
-        });
-    });
-
-    await downloadAvatar();
-
-    // ===== Generate Jail Poster =====
-    await generateThinBarsImage(avatarCache, name, wantedPath);
-
-    // ===== Send message =====
-    api.sendMessage(
-      {
-        body: `@${name} পোদ মারার জন্য জেলে ভরা হলো🥹🙆`,
-        mentions: [{ tag: name, id: uid }],
-        attachment: fs.createReadStream(wantedPath)
-      },
-      threadID,
-      () => {
-        [avatarCache, wantedPath].forEach(f => fs.existsSync(f) && fs.unlinkSync(f));
-      },
-      messageID
-    );
-
-  } catch (err) {
-    console.error("Jail Error:", err);
-    api.sendMessage("⚠️ Can't create jail poster!", threadID, messageID);
-  }
-};
+  
+  return targetID;
+}
 
 // ===== Image Generator =====
 async function generateThinBarsImage(avatarPath, name, outPath) {
@@ -138,3 +120,76 @@ async function generateThinBarsImage(avatarPath, name, outPath) {
 
   fs.writeFileSync(outPath, canvas.toBuffer());
 }
+
+module.exports.run = async function ({ api, event, args, Users }) {
+  const { threadID, messageID, senderID } = event;
+
+  // ===== Get target user using three-way detection =====
+  const targetID = await getTargetUser(api, event, args);
+  
+  if (!targetID) {
+    return api.sendMessage(
+      "❌রাহাদ বসকে ডাক দে🫩\nকীভাবে কমান্ড ব্যবহার করতে হয় শিখায় দিবো🥴",
+      threadID, 
+      messageID
+    );
+  }
+
+  const name = await Users.getNameUser(targetID);
+
+  try {
+    const cacheDir = path.join(__dirname, "cache");
+    if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
+
+    const avatarCache = path.join(cacheDir, `jail_avatar_${targetID}.jpg`);
+    const wantedPath = path.join(cacheDir, `jail_${Date.now()}.png`);
+
+    // ===== Download profile picture =====
+    const fbPicUrl = `https://graph.facebook.com/${targetID}/picture?height=1500&width=1500&access_token=6628568379|c1e620fa708a1d5696fb991c1bde5662`;
+
+    const downloadAvatar = () => new Promise((resolve, reject) => {
+      request(encodeURI(fbPicUrl))
+        .pipe(fs.createWriteStream(avatarCache))
+        .on("close", resolve)
+        .on("error", async () => {
+          // fallback image
+          const defaultImg = "https://i.imgur.com/8Q2Z3tI.png";
+          request(defaultImg)
+            .pipe(fs.createWriteStream(avatarCache))
+            .on("close", resolve)
+            .on("error", reject);
+        });
+    });
+
+    await downloadAvatar();
+
+    // ===== Generate Jail Poster =====
+    await generateThinBarsImage(avatarCache, name, wantedPath);
+
+    // ===== Check if jailing yourself =====
+    let jailMessage;
+    if (targetID === senderID) {
+      jailMessage = `নিজেই নিজেকে পোদ মেরে জেলে ভরলো🤣`;
+    } else {
+      jailMessage = `@${name} পোদ মারার জন্য তোমাকে জেলে ভরা হলো🥹🙆`;
+    }
+
+    // ===== Send message =====
+    api.sendMessage(
+      {
+        body: jailMessage,
+        mentions: [{ tag: name, id: targetID }],
+        attachment: fs.createReadStream(wantedPath)
+      },
+      threadID,
+      () => {
+        [avatarCache, wantedPath].forEach(f => fs.existsSync(f) && fs.unlinkSync(f));
+      },
+      messageID
+    );
+
+  } catch (err) {
+    console.error("Jail Error:", err);
+    api.sendMessage("⚠️কমান্ড এর ফাইল নষ্ট হয়ে গেছে", threadID, messageID);
+  }
+};
