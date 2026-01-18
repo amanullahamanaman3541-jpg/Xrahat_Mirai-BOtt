@@ -5,13 +5,29 @@ module.exports.config = {
  credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
  description: "Happy birthday wish for your friends",
  commandCategory: "🩵love🩵",
- usages: "@tag",
+ usages: "[@mention/reply/UID/link/name]",
  dependencies: {
  axios: "",
  "fs-extra": ""
  },
  cooldowns: 0
 };
+
+// ===== Helper: Full Name Mention Detection =====
+async function getUIDByFullName(api, threadID, body) {
+ if (!body.includes("@")) return null;
+ const match = body.match(/@(.+)/);
+ if (!match) return null;
+ const targetName = match[1].trim().toLowerCase().replace(/\s+/g, " ");
+ const threadInfo = await api.getThreadInfo(threadID);
+ const users = threadInfo.userInfo || [];
+ const user = users.find(u => {
+ if (!u.name) return false;
+ const fullName = u.name.trim().toLowerCase().replace(/\s+/g, " ");
+ return fullName === targetName;
+ });
+ return user ? user.id : null;
+}
 
 module.exports.wrapText = (ctx, text, maxWidth) => {
  return new Promise(resolve => {
@@ -61,11 +77,42 @@ module.exports.run = async function ({
  const { loadImage, createCanvas } = require("canvas");
  const fs = require("fs-extra");
  const axios = require("axios");
+ 
+ const { threadID, messageID, senderID } = event;
+ let targetID;
+
+ // ===== Determine targetID in three ways =====
+ if (event.type === "message_reply") {
+ // Way 1: Reply to a message
+ targetID = event.messageReply.senderID;
+ } else if (args[0]) {
+ if (args[0].indexOf(".com/") !== -1) {
+ // Way 2: Facebook profile link
+ targetID = await api.getUID(args[0]);
+ } else if (args.join().includes("@")) {
+ // Way 3: Mention or full name
+ // 3a: Direct Facebook mention
+ targetID = Object.keys(event.mentions || {})[0];
+ if (!targetID) {
+ // 3b: Full name detection
+ targetID = await getUIDByFullName(api, event.threadID, args.join(" "));
+ }
+ } else {
+ // Direct UID
+ targetID = args[0];
+ }
+ } else {
+ // No target specified - use sender's own ID (birthday wish for self)
+ targetID = senderID;
+ }
+
+ if (!targetID) {
+ return api.sendMessage("❌রাহাদ বসকে ডাক দে🫩\nকীভাবে কমান্ড ব্যবহার করতে হয় শিখায় দিবো🥴", threadID, messageID);
+ }
 
  let bgPath = __dirname + "/cache/background.png";
  let avtPath = __dirname + "/cache/Avtmot.png";
 
- const targetID = Object.keys(event.mentions)[0] || event.senderID;
  const targetName = await Users.getNameUser(targetID);
  const wisherName = await Users.getNameUser(event.senderID);
 
