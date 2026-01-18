@@ -49,9 +49,9 @@ async function sendProfilePicture(api, event, uid, userName = "") {
     const gender = userData.gender || "Unknown";
     
     const callback = () => api.sendMessage({
-      body: `📛 Name: ${name}\n` +
-            `🆔 User ID: ${uid}\n` +
-            `🚻 Gender: ${gender}\n`,
+      body: `📛𝗡𝗮𝗺𝗲 ${name}\n` +
+            `🆔𝗨𝗶𝗱 ${uid}\n` +
+            `🚻𝗚𝗲𝗻𝗱𝗲𝗿 ${gender}\n`,
       attachment: fs.createReadStream(__dirname + "/cache/1.png")
     }, event.threadID, () => fs.unlinkSync(__dirname + "/cache/1.png"), event.messageID);
     
