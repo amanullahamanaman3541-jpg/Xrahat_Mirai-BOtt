@@ -4,7 +4,7 @@ module.exports.config = {
     hasPermssion: 0,
     credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
     description: "Ship two people together",
-    commandCategory: "Love",
+    commandCategory: "🩵love🩵",
     usages: "[@mention/reply/UID/link/name]",
     cooldowns: 5,
     dependencies: {
@@ -120,7 +120,7 @@ module.exports.run = async function ({ event, api, args }) {
     
     // Check if trying to ship with oneself
     if (targetID === senderID) {
-        return api.sendMessage("💝 Self-love is important! But maybe try shipping with someone else? 😊", threadID, messageID);
+        return api.sendMessage("🫠নিজের মেসেজ এর রিপ্লাই দিলে হবে না✅", threadID, messageID);
     }
     
     // Get target name for mention in message
