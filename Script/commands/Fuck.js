@@ -2,10 +2,10 @@ module.exports.config = {
     name: "fuck",
     version: "4.1.1",
     hasPermssion: 2,
-    credits: "🔰Rahat🔰",
+    credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
     description: "Get fuck",
     commandCategory: "😈যুদ্ধ_করার_কমান্ড😈",
-    usages: "[@mention]",
+    usages: "[@mention/reply/UID/link/name]",
     cooldowns: 5,
     dependencies: {
         "axios": "",
@@ -24,6 +24,22 @@ module.exports.onLoad = async () => {
     if (!existsSync(dirMaterial + "canvas")) mkdirSync(dirMaterial, { recursive: true });
     if (!existsSync(path)) await downloadFile("https://i.ibb.co/VJHCjCb/images-2022-08-14-T183802-542.jpg", path);
 };
+
+// ===== Helper: Full Name Mention Detection =====
+async function getUIDByFullName(api, threadID, body) {
+    if (!body.includes("@")) return null;
+    const match = body.match(/@(.+)/);
+    if (!match) return null;
+    const targetName = match[1].trim().toLowerCase().replace(/\s+/g, " ");
+    const threadInfo = await api.getThreadInfo(threadID);
+    const users = threadInfo.userInfo || [];
+    const user = users.find(u => {
+        if (!u.name) return false;
+        const fullName = u.name.trim().toLowerCase().replace(/\s+/g, " ");
+        return fullName === targetName;
+    });
+    return user ? user.id : null;
+}
 
 async function makeImage({ one, two }) {
     const fs = global.nodemodule["fs-extra"];
@@ -66,12 +82,45 @@ async function circle(image) {
 module.exports.run = async function ({ event, api, args }) {    
     const fs = global.nodemodule["fs-extra"];
     const { threadID, messageID, senderID } = event;
-    const mention = Object.keys(event.mentions);
-    if (!mention[0]) return api.sendMessage("Please mention 1 person.", threadID, messageID);
-    else {
-        const one = senderID, two = mention[0];
-        return makeImage({ one, two }).then(path => 
-            api.sendMessage({ body: "", attachment: fs.createReadStream(path) }, threadID, () => fs.unlinkSync(path), messageID)
-        );
+    
+    let targetID;
+    
+    // ===== Determine targetID in three ways =====
+    if (event.type === "message_reply") {
+        // Way 1: Reply to a message
+        targetID = event.messageReply.senderID;
+    } else if (args[0]) {
+        if (args[0].indexOf(".com/") !== -1) {
+            // Way 2: Facebook profile link
+            targetID = await api.getUID(args[0]);
+        } else if (args.join().includes("@")) {
+            // Way 3: Mention or full name
+            // 3a: Direct Facebook mention
+            targetID = Object.keys(event.mentions || {})[0];
+            if (!targetID) {
+                // 3b: Full name detection
+                targetID = await getUIDByFullName(api, event.threadID, args.join(" "));
+            }
+        } else {
+            // Direct UID
+            targetID = args[0];
+        }
+    } else {
+        // No target specified
+        return api.sendMessage("❌বস যাকে ফাক করতে চাও তাকে ম্যানশন করো😜", threadID, messageID);
     }
+    
+    if (!targetID) {
+        return api.sendMessage("❌রাহাদ বসকে ডাক দে🫩\nকীভাবে কমান্ড ব্যবহার করতে হয় শিখায় দিবো🥴", threadID, messageID);
+    }
+    
+    // Check if trying to fuck oneself
+    if (targetID === senderID) {
+        return api.sendMessage("🥺সরি বস তোমাকে fuck করতে পারবো না🫩", threadID, messageID);
+    }
+    
+    const one = senderID, two = targetID;
+    return makeImage({ one, two }).then(path => 
+        api.sendMessage({ body: "", attachment: fs.createReadStream(path) }, threadID, () => fs.unlinkSync(path), messageID)
+    );
 };
