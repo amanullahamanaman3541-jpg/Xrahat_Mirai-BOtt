@@ -9,7 +9,7 @@ module.exports.config = {
   hasPermssion: 0,
   credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
   description: "Wanted with thin bars",
-  commandCategory: "fun",
+  commandCategory: "🤣Funny🤣",
   usages: "jail [@mention/reply/UID/link/name]",
   cooldowns: 10
 };
