@@ -2,10 +2,10 @@ module.exports.config = {
     name: "married3",
     version: "3.1.1",
     hasPermssion: 0,
-    credits: "🔰Rahat🔰",
+    credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
     description: "married",
     commandCategory: "🩵love🩵",
-    usages: "[@mention]",
+    usages: "[@mention/reply/UID/link/name]",
     cooldowns: 5,
     dependencies: {
         "axios": "",
@@ -14,6 +14,22 @@ module.exports.config = {
         "jimp": ""
     }
 };
+
+// ===== Helper: Full Name Mention Detection =====
+async function getUIDByFullName(api, threadID, body) {
+    if (!body.includes("@")) return null;
+    const match = body.match(/@(.+)/);
+    if (!match) return null;
+    const targetName = match[1].trim().toLowerCase().replace(/\s+/g, " ");
+    const threadInfo = await api.getThreadInfo(threadID);
+    const users = threadInfo.userInfo || [];
+    const user = users.find(u => {
+        if (!u.name) return false;
+        const fullName = u.name.trim().toLowerCase().replace(/\s+/g, " ");
+        return fullName === targetName;
+    });
+    return user ? user.id : null;
+}
 
 module.exports.onLoad = async() => {
     const { resolve } = global.nodemodule["path"];
@@ -55,6 +71,7 @@ async function makeImage({ one, two }) {
     
     return pathImg;
 }
+
 async function circle(image) {
     const jimp = require("jimp");
     image = await jimp.read(image);
@@ -65,9 +82,46 @@ async function circle(image) {
 module.exports.run = async function ({ event, api, args }) {    
     const fs = global.nodemodule["fs-extra"];
     const { threadID, messageID, senderID } = event;
-    const mention = Object.keys(event.mentions);
+    let targetID;
+    
+    // ===== Determine targetID in three ways =====
+    if (event.type === "message_reply") {
+        // Way 1: Reply to a message
+        targetID = event.messageReply.senderID;
+    } else if (args[0]) {
+        if (args[0].indexOf(".com/") !== -1) {
+            // Way 2: Facebook profile link
+            targetID = await api.getUID(args[0]);
+        } else if (args.join().includes("@")) {
+            // Way 3: Mention or full name
+            // 3a: Direct Facebook mention
+            targetID = Object.keys(event.mentions || {})[0];
+            if (!targetID) {
+                // 3b: Full name detection
+                targetID = await getUIDByFullName(api, event.threadID, args.join(" "));
+            }
+        } else {
+            // Direct UID
+            targetID = args[0];
+        }
+    } else {
+        // No target specified
+        return api.sendMessage("❌যাকে বিয়ে করতে চাও তাকে ম্যানশন করো😜", threadID, messageID);
+    }
+    
+    if (!targetID) {
+        return api.sendMessage("❌রাহাদ বসকে ডাক দে🫩\nকীভাবে কমান্ড ব্যবহার করতে হয় শিখায় দিবো🥴", threadID, messageID);
+    }
+    
+    // Check if trying to marry oneself
+    if (targetID === senderID) {
+        return api.sendMessage("🤣নিজেই নিজেকে কীভাবে বিয়ে করবি😕 \n অন্য জন কে ম্যানশন দাও", threadID, messageID);
+    }
+    
+    const one = senderID, two = targetID;
+    
     const captions = [
-        "💟ღــ💘তোমার ভালোবাসা, আমার জীবনের সবথেকে বড় উপহার।💘ღــ💟",
+        "💟ღــ💘তোমার ভালোবাসা, আমার জীবনের সবথেকে বড় উপহার।💘ღ－－💟",
         "তোমার চোখে তাকালেই আমার যে একটা পৃথিবীর আছে সেটা আমি সবকিছু ভুলে যাই!💚❤️‍🩹💞",
         "তুমি আমার জীবনের সেই গল্প, যেই গল্প আমি কোন দিন শেষ করতে চাই না!🥰😘🌻",
         "I am so lucky person! তোমার মতো একজন ভালোবাসায়ী মানুষ আমার জীবন সঙ্গী হিসাবে পেয়ে!❤️‍🩹💞🌺",
@@ -80,18 +134,15 @@ module.exports.run = async function ({ event, api, args }) {
         "💠✦💟✦💠আমার মনে হয় আমার মনের মধ্যে একটা নরম জমিটায়, শুধু তোমার বসবাস।💠✦💟✦💠",
         "আমার জীবনে সুখ-শান্তি লাগবে না, আমি শুধু তোমাকে চাই!🌼"
     ];
+    
     const caption = captions[Math.floor(Math.random() * captions.length)];
-
-    if (!mention[0]) return api.sendMessage("Please mention 1 person.", threadID, messageID);
-    else {
-        const one = senderID, two = mention[0];
-        return makeImage({ one, two }).then(path =>
-            api.sendMessage(
-                { body: caption, attachment: fs.createReadStream(path) },
-                threadID,
-                () => fs.unlinkSync(path),
-                messageID
-            )
-        );
-    }
+    
+    return makeImage({ one, two }).then(path =>
+        api.sendMessage(
+            { body: caption, attachment: fs.createReadStream(path) },
+            threadID,
+            () => fs.unlinkSync(path),
+            messageID
+        )
+    );
 }
