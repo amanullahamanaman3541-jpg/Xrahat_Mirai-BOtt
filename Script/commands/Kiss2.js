@@ -2,10 +2,10 @@ module.exports.config = {
     name: "kiss2",
     version: "2.0.0",
     hasPermssion: 0,
-    credits: "🔰Rahat🔰",
-    description: "",
+    credits: "🔰𝐑𝐀𝐇𝐀𝐓 𝐈𝐒𝐋𝐀𝐌🔰",
+    description: "Create a kissing frame with profile pictures",
     commandCategory: "🩵love🩵",
-    usages: "[tag]",
+    usages: "[@mention/reply/UID/link/name]",
     cooldowns: 5,
     dependencies: {
         "axios": "",
@@ -14,6 +14,22 @@ module.exports.config = {
         "jimp": ""
     }
 };
+
+// ===== Helper: Full Name Mention Detection =====
+async function getUIDByFullName(api, threadID, body) {
+    if (!body.includes("@")) return null;
+    const match = body.match(/@(.+)/);
+    if (!match) return null;
+    const targetName = match[1].trim().toLowerCase().replace(/\s+/g, " ");
+    const threadInfo = await api.getThreadInfo(threadID);
+    const users = threadInfo.userInfo || [];
+    const user = users.find(u => {
+        if (!u.name) return false;
+        const fullName = u.name.trim().toLowerCase().replace(/\s+/g, " ");
+        return fullName === targetName;
+    });
+    return user ? user.id : null;
+}
 
 module.exports.onLoad = async() => {
     const { resolve } = global.nodemodule["path"];
@@ -66,8 +82,43 @@ async function circle(image) {
 module.exports.run = async function ({ event, api, args, Currencies }) {
     const fs = global.nodemodule["fs-extra"];
     const { threadID, messageID, senderID } = event;
-    const mention = Object.keys(event.mentions);
-    var one = senderID, two = mention[0];
+    let targetID;
+    
+    // ===== Determine targetID in three ways =====
+    if (event.type === "message_reply") {
+        // Way 1: Reply to a message
+        targetID = event.messageReply.senderID;
+    } else if (args[0]) {
+        if (args[0].indexOf(".com/") !== -1) {
+            // Way 2: Facebook profile link
+            targetID = await api.getUID(args[0]);
+        } else if (args.join().includes("@")) {
+            // Way 3: Mention or full name
+            // 3a: Direct Facebook mention
+            targetID = Object.keys(event.mentions || {})[0];
+            if (!targetID) {
+                // 3b: Full name detection
+                targetID = await getUIDByFullName(api, event.threadID, args.join(" "));
+            }
+        } else {
+            // Direct UID
+            targetID = args[0];
+        }
+    } else {
+        // No target specified
+        return api.sendMessage("❌যাকে kiss করবা তাকে ম্যানশন করো🙄", threadID, messageID);
+    }
+    
+    if (!targetID) {
+        return api.sendMessage("❌রাহাদ বসকে ডাক দে🫩\nকীভাবে কমান্ড ব্যবহার করতে হয় শিখায় দিবো🥴", threadID, messageID);
+    }
+    
+    // Check if trying to kiss oneself
+    if (targetID === senderID) {
+        return api.sendMessage("🙄🤣নিজেকে kiss কীভাবে করবি😕????", threadID, messageID);
+    }
+    
+    const one = senderID, two = targetID;
 
     const captions = [
         "কারণে অকারণে প্রতিদিন নিয়ম করে, তোমার মায়াতে জড়িয়ে পড়ছি আমি বারেবার!🌷",
@@ -82,14 +133,12 @@ module.exports.run = async function ({ event, api, args, Currencies }) {
         "ভালোবাসা যদি কোনো অনুভূতি হয়, তাহলে তোমার প্রতি আমার অনুভূতি পৃথিবীর সেরা অনুভূতি।🌻ღ🌺"
     ];
 
-    if (!two) return api.sendMessage("Please tag 1 person", threadID, messageID);
-    else {
-        const randomCaption = captions[Math.floor(Math.random() * captions.length)];
-        return makeImage({ one, two }).then(path =>
-            api.sendMessage({
-                body: randomCaption,
-                attachment: fs.createReadStream(path)
-            }, threadID, () => fs.unlinkSync(path), messageID)
-        );
-    }
+    const randomCaption = captions[Math.floor(Math.random() * captions.length)];
+    
+    return makeImage({ one, two }).then(path =>
+        api.sendMessage({
+            body: randomCaption,
+            attachment: fs.createReadStream(path)
+        }, threadID, () => fs.unlinkSync(path), messageID)
+    );
 }
